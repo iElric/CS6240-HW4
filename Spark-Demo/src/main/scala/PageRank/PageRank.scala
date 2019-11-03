@@ -54,7 +54,7 @@ object PageRank {
 
     var graph_rank = sc.emptyRDD[(Int, Double)]
     // set number of iterations here
-    val iteration_number = 2
+    val iteration_number = 10
 
     for (i <- 1 to iteration_number) {
       graph_rank = graph.join(rank).map(tuple => (tuple._2._1, tuple._2._2))

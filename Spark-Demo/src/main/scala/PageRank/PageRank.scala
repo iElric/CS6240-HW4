@@ -49,13 +49,13 @@ object PageRank {
     }
 
     // Parallelized collection tp create rdd
-    var rank: RDD[(Int, Double)] = sc.parallelize(rank_list.toList).persist()
-    val graph: RDD[(Int, Int)] = sc.parallelize(graph_list.toList).persist()
+    var rank: RDD[(Int, Double)] = sc.parallelize(rank_list.toList)
+    val graph: RDD[(Int, Int)] = sc.parallelize(graph_list.toList)
 
     var graph_rank = sc.emptyRDD[(Int, Double)]
 
     // set number of iterations here
-    val iteration_number = 2
+    val iteration_number = 1
 
     for (i <- 1 to iteration_number) {
       graph_rank = graph.join(rank).map(tuple => (tuple._2._1, tuple._2._2))
@@ -92,7 +92,7 @@ object PageRank {
 
     println(graph_rank.toDebugString)
     // get first 100 as required
-    rank.filter(tuple => {tuple._1 <= 100})saveAsTextFile(args(1))
+    rank.filter(tuple => {tuple._1 <= 1000})saveAsTextFile(args(1))
 
   }
 

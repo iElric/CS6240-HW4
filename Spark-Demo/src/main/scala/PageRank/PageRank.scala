@@ -54,10 +54,11 @@ object PageRank {
 
     var graph_rank = sc.emptyRDD[(Int, Double)]
     // set number of iterations here
-    val iteration_number = 10
+    val iteration_number = 1
 
     for (i <- 1 to iteration_number) {
       graph_rank = graph.join(rank).map(tuple => (tuple._2._1, tuple._2._2))
+      //graph_rank.collect().foreach(println)
       //actually only reduce for key 0, other key only has one input
       var temp_rank = graph_rank.reduceByKey(_ + _)
       // lookup will return a list of values, get the first since there should be only one value
@@ -88,8 +89,8 @@ object PageRank {
       })
     }
 
-    prinln()
-
+    println(graph_rank.toDebugString)
+    rank.saveAsTextFile(args(1))
 
   }
 

@@ -7,7 +7,7 @@ hadoop.root=/Users/wangyexin/Apache/hadoop-2.9.2
 app.name=Rep_D
 jar.name=spark-demo.jar
 maven.jar.name=spark-demo-1.0.jar
-job.name=Triangle.Rep_D
+job.name=PageRank
 local.master=local[4]
 local.input=input
 local.output=output
@@ -110,7 +110,7 @@ upload-app-aws:
 # Main EMR launch.
 aws: jar upload-app-aws delete-output-aws
 	aws emr create-cluster \
-		--name "TriangleCount Spark Cluster" \
+		--name "PageRank Spark Cluster" \
 		--release-label ${aws.emr.release} \
 		--instance-groups '[{"InstanceCount":${aws.num.nodes},"InstanceGroupType":"CORE","InstanceType":"${aws.instance.type}"},{"InstanceCount":1,"InstanceGroupType":"MASTER","InstanceType":"${aws.instance.type}"}]' \
 	    --applications Name=Hadoop Name=Spark \

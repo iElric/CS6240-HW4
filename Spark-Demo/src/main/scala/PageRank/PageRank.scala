@@ -54,7 +54,7 @@ object PageRank {
 
     var graph_rank = sc.emptyRDD[(Int, Double)]
     // set number of iterations here
-    val iteration_number = 1
+    val iteration_number = 2
 
     for (i <- 1 to iteration_number) {
       graph_rank = graph.join(rank).map(tuple => (tuple._2._1, tuple._2._2))
@@ -90,7 +90,8 @@ object PageRank {
     }
 
     println(graph_rank.toDebugString)
-    rank.saveAsTextFile(args(1))
+    // get first 100 as required
+    rank.filter(tuple => {tuple._1 <= 100})saveAsTextFile(args(1))
 
   }
 

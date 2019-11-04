@@ -1,7 +1,6 @@
-RSJoin$Path2TriangleMapper.class
-RSJoin$Path2Mapper.class
-RSJoin.class
-RSJoin$Path2Reducer.class
-RSJoin$COUNTER.class
-RSJoin$EdgeTriangleMapper.class
-RSJoin$TriangleReducer.class
+PageRank$PRReducer.class
+PageRank$finalMapper.class
+PageRank.class
+PageRank$GraphMapper.class
+PageRank$PRMapper.class
+PageRank$finalReducer.class

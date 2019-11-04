@@ -1,11 +1,17 @@
 import java.io.IOException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class PageRank extends Configured implements Tool {
 
@@ -16,20 +22,21 @@ public class PageRank extends Configured implements Tool {
   /**
    * This is the class to construct graph.
    */
-  public static class GraphMapper extends Mapper<Object, Text, Text, Text> {
+  public static class ConstructMapper extends Mapper<Object, Text, Text, Text> {
 
     @Override
     public void map(Object key, Text value, Context context)
         throws IOException, InterruptedException {
-      double initPR = 1.0 / (k * k);
-      String val = null;
+      System.out.println("----------------------------------------------------");
+      String val;
       for (int i = 1; i <= k * k; i++) {
+        System.out.println(k);
         if (i % k == 0) {
           // the node who has no out edge, which is dangling page, all set to 0 as out
-          val = 0 + "," + initPR;
+          val = 0 + "," + 1.0 / (k * k);
         } else {
           int j = i + 1;
-          val = j + "," + initPR;
+          val = j + "," + 1.0 / (k * k);
         }
         context.write(new Text(Integer.toString(i)), new Text(val));
       }
@@ -42,7 +49,7 @@ public class PageRank extends Configured implements Tool {
   /**
    * Map process on vertex n which contains current page rank and its adj list.
    */
-  public static class PRMapper extends Mapper<Object, Text, Text, Text> {
+  public static class GraphMapper extends Mapper<Object, Text, Text, Text> {
 
     @Override
     public void map(Object key, Text value, Context context)
@@ -67,7 +74,7 @@ public class PageRank extends Configured implements Tool {
   }
 
   // same as the module pseudo code
-  public static class PRReducer extends Reducer<Text, Text, Object, Object> {
+  public static class GraphReducer extends Reducer<Text, Text, Object, Object> {
 
     @Override
     public void reduce(Text key, Iterable<Text> values, Context context)
@@ -94,7 +101,7 @@ public class PageRank extends Configured implements Tool {
   /**
    * Extract the dummy 0 pr and send to others since the final result should not contain 0 node.
    */
-  public static class finalMapper extends Mapper<Object, Text, Text, Text> {
+  public static class CombineMapper extends Mapper<Object, Text, Text, Text> {
 
     @Override
     public void map(Object key, Text value, Context context)
@@ -117,7 +124,8 @@ public class PageRank extends Configured implements Tool {
   /**
    * Sum the pr gave out by dummy. Values should contain just two objects.
    */
-  public static class finalReducer extends Reducer<Text, Text, Object, Object> {
+  public static class CombineReducer extends Reducer<Text, Text, Object, Object> {
+
     @Override
     public void reduce(Text key, Iterable<Text> values, Context context)
         throws IOException, InterruptedException {
@@ -129,7 +137,32 @@ public class PageRank extends Configured implements Tool {
     }
   }
 
-  
+  @Override
+  public int run(final String[] args) throws Exception {
+    final Configuration conf = getConf();
+    final Job job_Graph = Job.getInstance(conf, "Construct Graph");
+    job_Graph.setJarByClass(PageRank.class);
+    job_Graph.setInputFormatClass(NLineInputFormat.class);
+    job_Graph.setMapperClass(ConstructMapper.class);
+    job_Graph.setOutputKeyClass(Text.class);
+    job_Graph.setOutputValueClass(Text.class);
+    NLineInputFormat.addInputPath(job_Graph, new Path(args[0]));
+    FileOutputFormat.setOutputPath(job_Graph, new Path(args[1]));
+    return job_Graph.waitForCompletion(true) ? 0 : 1;
+  }
+
+
+
+  public static void main(final String[] args) {
+    if (args.length != 2) {
+      throw new Error("Arguments required:\n<input-dir> <output-dir>");
+    }
+    try {
+      ToolRunner.run(new PageRank(), args);
+    } catch (final Exception e) {
+      logger.error("", e);
+    }
+  }
 
 
 }
